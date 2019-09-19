@@ -1,0 +1,26 @@
+// SVM prediction.
+int SvmClassification::TlSvmPredict(const cv::Mat& kLight, svm_model* model, double* prob_est)
+{
+    struct svm_node* svmVec;
+    svmVec = (struct svm_node*)malloc( (kLight.cols * kLight.rows + 1) * sizeof(struct svm_node));
+    for(int r =0; r<kLight.rows; ++r)
+    {
+        for(int c = 0; c<kLight.cols; ++c)
+        {
+           svmVec[r*kLight.cols+c].index = r*kLight.cols+c+1;
+           svmVec[r*kLight.cols+c].value = float(int(kLight.at<uchar>(r,c)));
+        }
+    }
+    svmVec[kLight.cols * kLight.rows].index = -1;
+    double prediction;
+    if(svm_check_probability_model(model))
+    {
+        prediction = svm_predict_probability(model, svmVec, prob_est);   
+    }
+    else
+    {
+        prediction = svm_predict(model, svmVec);
+    }
+    free(svmVec);  
+    return int(prediction);
+}
